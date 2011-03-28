@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby -w
+
+def get_partial_name( file, line )
+  if line =~ /=\s*render\s*\(?:partial\s*=>\s*["'](.*?)["']/
+    path = $1
+
+    if path.index( '/' )
+      path = File.join( 'app/views', path )
+    else
+      path = File.join( File.dirname( file ), path )
+    end
+
+    path.gsub!( /([^\/]+)$/, '_\1')
+
+    ( %w[erb rhtml html.rb] ).each do |ext|
+      p = "#{path}.#{ext}"
+      return p if File.exists? p
+    end
+  end
+
+  return nil
+end
+
+def get_partials_from_file( file )
+  file.each do |line|
+    partial = get_partial_name( file, line )
+
+    yield partial unless partial.nil?
+  end
+end
+
+def get_dependencies( path, maxdepth = 3, depth = 0 )
+
+  deps = []
+
+  return deps if depth == maxdepth
+
+  File.open( path ) do |file| 
+    get_partials_from_file( file ) do |partial|
+      deps << ( '-' * depth << partial_path )
+      deps |= get_dependencies( partial_path, maxdepth, depth + 1 )
+    end
+  end
+
+  return deps
+end
+
+def get_dependencies_of( path, maxdepth = 4, depth = 1 )
+
+  dependencies = []
+
+  return dependencies if depth == maxdepth
+
+  Dir.glob( "app/views/**/*.{erb,rb,rhtml}").each do |file|
+    File.open( file ) do |f|
+      get_partials_from_file( f ) do |partial|
+
+        # Does this partial match our file?
+        if partial == path
+          dependencies << ( '-' * depth << file )
+          dependencies |= get_dependencies_of( file, maxdepth, depth + 1 )
+        end
+      end
+    end
+  end
+
+  dependencies
+end
+
+if ARGV.empty?
+  puts "depends {app/views/_my_partial.rhtml}"
+  Process.exit!( true )
+end
+
+puts "The following views are dependent on #{ARGV.first}:"
+puts get_dependencies_of( ARGV.first )
