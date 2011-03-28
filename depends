@@ -7,7 +7,7 @@ def get_partial_name( file, line )
     if path.index( '/' )
       path = File.join( 'app/views', path )
     else
-      path = File.join( File.dirname( file ), path )
+      path = File.join( File.dirname( file.path ), path )
     end
 
     path.gsub!( /([^\/]+)$/, '_\1')
