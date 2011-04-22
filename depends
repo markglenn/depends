@@ -35,10 +35,10 @@ def get_dependencies( path, maxdepth = 3, depth = 0 )
 
   return deps if depth == maxdepth
 
-  File.open( path ) do |file| 
+  File.open( path ) do |file|
     get_partials_from_file( file ) do |partial|
-      deps << ( '-' * depth << partial_path )
-      deps |= get_dependencies( partial_path, maxdepth, depth + 1 )
+      deps << ( '-' * depth << partial )
+      deps |= get_dependencies( partial, maxdepth, depth + 1 )
     end
   end
 
@@ -67,10 +67,15 @@ def get_dependencies_of( path, maxdepth = 4, depth = 1 )
   dependencies
 end
 
-if ARGV.empty?
-  puts "depends {app/views/_my_partial.rhtml}"
-  Process.exit!( true )
-end
+files = ARGV
+files = Dir.glob( '**/*.{erb,html.rb,rhtml}' ) if files.empty?
 
-puts "The following views are dependent on #{ARGV.first}:"
-puts get_dependencies_of( ARGV.first )
+files.each do |file|
+  file = file.sub(/^\.\//, '')
+  deps = get_dependencies_of( file, maxdepth = 8 )
+
+  if not deps.empty?
+    puts "#{file}:"
+    puts deps
+  end
+end
