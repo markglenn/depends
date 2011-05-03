@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby -w
 
+# Returns the partial name of a line or nil if not found
 def get_partial_name( file, line )
   if line =~ /=\s*render\s*\(?:partial\s*=>\s*["'](.*?)["']/
     path = $1
@@ -21,6 +22,7 @@ def get_partial_name( file, line )
   return nil
 end
 
+# Gets all the partials referenced in the file
 def get_partials_from_file( file )
   file.each do |line|
     partial = get_partial_name( file, line )
@@ -29,6 +31,7 @@ def get_partials_from_file( file )
   end
 end
 
+# Gets the files this path depends on.
 def get_dependencies( path, maxdepth = 3, depth = 0 )
 
   deps = []
@@ -45,6 +48,7 @@ def get_dependencies( path, maxdepth = 3, depth = 0 )
   return deps
 end
 
+# Gets the views that depend on this file
 def get_dependencies_of( path, maxdepth = 8, depth = 1 )
 
   dependencies = []
@@ -67,14 +71,18 @@ def get_dependencies_of( path, maxdepth = 8, depth = 1 )
   dependencies
 end
 
+# If no arguments given, give a full hierarchy tree
 files = ARGV
 files = Dir.glob( '**/*.{erb,html.rb,rhtml,haml}' ) if files.empty?
 
 files.each do |file|
+  # remove the ./ at the start of a filename.  Messes with the search
   file = file.sub(/^\.\//, '')
   deps = get_dependencies_of( file, maxdepth = 8 )
 
-  if not deps.empty?
+  if deps.empty?
+    puts "#{file} has no views that depend on it"
+  else
     puts "Files depending on #{file}:"
     puts deps
   end
