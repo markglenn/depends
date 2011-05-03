@@ -12,9 +12,9 @@ def get_partial_name( file, line )
 
     path.gsub!( /([^\/]+)$/, '_\1')
 
-    ( %w[erb rhtml html.rb] ).each do |ext|
-      p = "#{path}.#{ext}"
-      return p if File.exists? p
+    ( %w[erb rhtml rb haml] ).each do |ext|
+      return "#{path}.#{ext}" if File.exists?( "#{path}.#{ext}" )
+      return "#{path}.html.#{ext}" if File.exists?( "#{path}.html.#{ext}" )
     end
   end
 
@@ -45,13 +45,13 @@ def get_dependencies( path, maxdepth = 3, depth = 0 )
   return deps
 end
 
-def get_dependencies_of( path, maxdepth = 4, depth = 1 )
+def get_dependencies_of( path, maxdepth = 8, depth = 1 )
 
   dependencies = []
 
   return dependencies if depth == maxdepth
 
-  Dir.glob( "app/views/**/*.{erb,rb,rhtml}").each do |file|
+  Dir.glob( "app/views/**/*.{erb,rb,rhtml,haml}").each do |file|
     File.open( file ) do |f|
       get_partials_from_file( f ) do |partial|
 
@@ -68,14 +68,14 @@ def get_dependencies_of( path, maxdepth = 4, depth = 1 )
 end
 
 files = ARGV
-files = Dir.glob( '**/*.{erb,html.rb,rhtml}' ) if files.empty?
+files = Dir.glob( '**/*.{erb,html.rb,rhtml,haml}' ) if files.empty?
 
 files.each do |file|
   file = file.sub(/^\.\//, '')
   deps = get_dependencies_of( file, maxdepth = 8 )
 
   if not deps.empty?
-    puts "#{file}:"
+    puts "Files depending on #{file}:"
     puts deps
   end
 end
