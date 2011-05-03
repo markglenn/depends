@@ -18,6 +18,13 @@ such as the following example:
 = render :partial => 'partial_name'
 ----
 
+Installation
+------------
+
+Copy the _depends_ file to somewhere in your path
+
+Only dependency is ruby v1.8+
+
 Usage
 -----
 
