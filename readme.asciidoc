@@ -1,0 +1,58 @@
+Ruby on Rails View Dependency
+=============================
+:Author:    Mark Glenn
+:Email:     <markglenn@gmail.com>
+:Date:      2011/05/03
+:Revision:  0.1
+
+Description
+-----------
+
+Simple dependency lister for Ruby on Rails 2 views.  Given a partial, it will list a hierarchy of 
+all views that depend on it.  This currently only handles cases where render is used specifically, 
+such as the following example:
+
+.View Code
+
+----
+= render :partial => 'partial_name'
+----
+
+Usage
+-----
+
+NOTE: The program must be run within the root project directory.
+
+.Get views that depend on partial
+----
+$ depends app/views/shared/_partial_name.erb
+----
+
+.Get full hierarchy of all dependencies
+----
+$ depends
+----
+
+Output Format
+-------------
+
+The output is a simple tree format
+
+----
+Files depending on app/shared/_ad.rhtml
+-app/views/content/index.rhtml
+-app/views/content/_form.rhtml
+--app/views/content/new.rhtml
+--app/views/content/edit.rhtml
+----
+
+The number of dashes '-' equal the number of levels deep the dependency exists.
+
+Supported View Formats/Extensions
+---------------------------------
+
+* .haml
+* .erb
+* .html.rb
+* .rhtml
+
